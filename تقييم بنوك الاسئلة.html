@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عرض تقديمي: تحليل وتقييم بنك الأسئلة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #6a11cb;
+            --primary-color-dark: #2575fc;
+            --primary-color-light: #8c52ff;
+            --text-color-headings: #2c3e50;
+            --text-color-body: #34495e;
+            --bg-gradient-start: #e0eafc;
+            --bg-gradient-end: #cfdef3;
+            --container-bg-start: #ffffff;
+            --container-bg-end: #f8f9fa;
+            --card-shadow: 0 8px 20px rgba(42, 54, 64, 0.15);
+            --interactive-shadow: 0 4px 12px rgba(42, 54, 64, 0.2);
+            --interactive-shadow-hover: 0 6px 18px rgba(42, 54, 64, 0.3);
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            color: var(--text-color-body);
+        }
+
+        .presentation-container {
+            width: 90%;
+            max-width: 1000px;
+            height: 600px;
+            background: linear-gradient(to right, var(--container-bg-start), var(--container-bg-end));
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInContainer 0.8s 0.2s ease-out forwards;
+        }
+
+        @keyframes fadeInContainer {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide {
+            min-width: 100%;
+            max-height: 100%; /* يضمن أن الشريحة لا تتجاوز ارتفاع الحاوية */
+            box-sizing: border-box;
+            padding: 30px 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: translateX(50px) scale(0.98);
+            transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+            overflow-y: auto; /* المفتاح الرئيسي للتمرير */
+            visibility: hidden;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            justify-content: center; /* الافتراضي للمحتوى القصير */
+        }
+        
+        .slide.has-long-content {
+            justify-content: flex-start; /* يبدأ المحتوى من الأعلى للسماح بالتمرير */
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+            z-index: 10;
+            visibility: visible;
+        }
+        
+        .slide.exiting-left {
+            opacity: 0;
+            transform: translateX(-50px) scale(0.98);
+            visibility: hidden;
+        }
+
+        .slide.exiting-right {
+            opacity: 0;
+            transform: translateX(50px) scale(0.98);
+            visibility: hidden;
+        }
+
+        .slide h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(120deg, var(--primary-color-dark), var(--primary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .slide h2 {
+            font-size: 1.875rem;
+            font-weight: 600;
+            background: linear-gradient(120deg, var(--text-color-headings), var(--primary-color-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            display: inline-block;
+            position: relative;
+        }
+
+        .slide h2::before { 
+            content: '📘'; 
+            margin-left: 8px; 
+            font-size: 1.5rem;
+            vertical-align: middle;
+            background: none; 
+            -webkit-text-fill-color: var(--primary-color); 
+        }
+
+        .slide p, .slide li {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 12px;
+            max-width: 700px; 
+            width: 100%;
+        }
+
+        .slide ul {
+            list-style-position: inside;
+            padding-right: 0;
+            text-align: right;
+            width: 100%;
+            max-width: 700px;
+        }
+        .slide ul ul {
+            padding-right: 20px;
+        }
+
+        .slide pre {
+            background: linear-gradient(145deg, #f8fafc, #f1f5f9);
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.04);
+            font-family: 'Courier New', Courier, monospace;
+            text-align: left;
+            direction: ltr;
+            overflow-x: auto;
+            width: 100%;
+            max-width: 700px;
+            font-size: 0.875rem;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+
+        .navigation-controls {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 20;
+        }
+
+        .nav-button {
+            background: linear-gradient(145deg, var(--primary-color), var(--primary-color-dark));
+            box-shadow: var(--interactive-shadow);
+            transition: all 0.25s ease-out;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            background: linear-gradient(145deg, var(--primary-color-light), var(--primary-color));
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: var(--interactive-shadow-hover);
+        }
+        .nav-button:focus-visible {
+            outline: 2px solid var(--primary-color-light);
+            outline-offset: 2px;
+        }
+
+        .nav-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            opacity: 0.7;
+            box-shadow: none;
+        }
+
+        .flowchart {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px; 
+            width: 100%;
+            padding: 15px 0; 
+            margin-top: 15px; 
+            position: relative;
+        }
+
+        .flowchart-step, .flowchart-decision, .flowchart-io {
+            background: linear-gradient(145deg, #e6e9ef, #ffffff); 
+            box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.1), -6px -6px 12px rgba(255, 255, 255, 0.7); 
+            transition: all 0.3s ease-out;
+            color: var(--text-color-headings);
+            padding: 12px 20px; 
+            border-radius: 12px; 
+            text-align: center;
+            min-width: 280px; 
+            font-size: 0.95rem; 
+            position: relative;
+        }
+
+        .flowchart-step:hover, 
+        .flowchart-decision:hover, 
+        .flowchart-io:hover {
+            background: linear-gradient(145deg, #ffffff, #e6e9ef); 
+            transform: translateY(-3px) scale(1.02); 
+            box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.15), -8px -8px 16px rgba(255, 255, 255, 0.8);
+        }
+
+        .flowchart-arrow {
+            font-size: 1.6rem; 
+            color: var(--primary-color);
+            margin: 3px 0; 
+            animation: bounceArrow 1.5s infinite;
+        }
+
+        @keyframes bounceArrow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); } 
+        }
+
+        .flowchart-label {
+            font-size: 0.85rem; 
+            color: #475569; 
+            margin-top: -8px;
+            margin-bottom: 3px;
+            backdrop-filter: blur(5px); 
+            background: rgba(255, 255, 255, 0.7); 
+            padding: 3px 6px; 
+            border-radius: 6px; 
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); 
+        }
+
+        .progress-indicator {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background-color: #e5e7eb;
+            border-radius: 0 0 0 16px;
+            z-index: 15;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary-color-dark), var(--primary-color));
+            border-radius: 0 0 0 16px;
+            transition: width 0.4s ease-out;
+            width: 0%;
+        }
+
+        .slide-counter {
+            position: absolute;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #64748b;
+            font-size: 0.875rem;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 4px 10px;
+            border-radius: 12px;
+            z-index: 20;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .thumbnails-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px; 
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            z-index: 50;
+            background-color: rgba(255,255,255,0.8);
+            padding: 8px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+            backdrop-filter: blur(6px);
+        }
+        .thumbnail {
+            width: 50px;
+            height: 30px;
+            background-color: #e5e7eb; 
+            border: 2px solid transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.25s ease-out;
+            opacity: 0.7;
+        }
+        .thumbnail:hover {
+            opacity: 1;
+            border-color: var(--primary-color-light);
+        }
+        .thumbnail.active {
+            border-color: var(--primary-color);
+            transform: scale(1.1);
+            opacity: 1;
+            box-shadow: 0 0 8px rgba(var(--primary-color-dark-rgb), 0.4);
+        }
+
+        .slide ul ul { list-style-type: circle; }
+        .slide ol { list-style-type: decimal; list-style-position: inside; }
+
+        .slide img {
+            max-width: 80%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-top: 1rem;
+        }
+
+        .highlight {
+            font-weight: bold;
+            color: var(--primary-color-dark);
+            background-color: rgba(106, 17, 203, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .two-column-layout {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            max-width: 800px;
+            margin-top: 20px;
+        }
+        .column {
+            flex: 1;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            text-align: right;
+        }
+        .column h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-color-headings);
+            margin-bottom: 10px;
+            border-bottom: 2px solid var(--primary-color-light);
+            padding-bottom: 5px;
+        }
+        .column p, .column pre {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: var(--text-color-body);
+        }
+        .column pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            text-align: right;
+            direction: rtl;
+        }
+
+        .data-table {
+            width: 100%;
+            max-width: 700px;
+            margin: 20px auto;
+            border-collapse: collapse;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 10px 12px;
+            text-align: right;
+            font-size: 0.9rem;
+        }
+        .data-table th {
+            background-color: var(--primary-color-light);
+            color: white;
+            font-weight: 600;
+        }
+        .data-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .data-table tr:hover {
+            background-color: #f1f1f1;
+        }
+        .slide .llm-response-container {
+            text-align: right;
+            max-width: 700px;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f4f8;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary-color);
+        }
+        .slide .llm-response-container h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-color-headings);
+            margin-bottom: 10px;
+        }
+         .slide .llm-response-container p, .slide .llm-response-container li {
+            font-size: 0.95rem;
+         }
+
+
+        @media (max-width: 768px) {
+            .presentation-container {
+                height: auto; min-height: 90vh; width: 95%; margin: 2.5vh 0;
+            }
+            .slide { padding: 25px; }
+            .slide h1 { font-size: 2rem; }
+            .slide h2 { font-size: 1.6rem; }
+            .slide p, .slide li { font-size: 1rem; }
+            .navigation-controls { position: relative; margin-top: 20px; padding-bottom: 20px; }
+            .slide-counter { bottom: 80px; }
+            .thumbnails-container { display: none; }
+            .flowchart-step, .flowchart-decision, .flowchart-io { min-width: 220px; padding: 10px 15px; }
+            .two-column-layout { flex-direction: column; }
+            .data-table th, .data-table td { padding: 8px; font-size: 0.85rem;}
+
+        }
+         @media (max-width: 480px) {
+            .slide { padding: 20px 15px; }
+            .slide h1 { font-size: 1.7rem; }
+            .slide h2 { font-size: 1.4rem; }
+            .slide p, .slide li { font-size: 0.9rem; }
+            .nav-button { padding: 8px 16px; font-size: 0.9rem; }
+            .slide-counter { font-size: 0.8rem; padding: 3px 8px; bottom: auto; top: 10px; background: transparent; box-shadow: none;}
+            .flowchart-step, .flowchart-decision, .flowchart-io { min-width: 90%; font-size: 0.9rem; }
+            .slide img { max-width: 90%; }
+            .data-table th, .data-table td { padding: 6px; font-size: 0.8rem;}
+            .column p, .column pre { font-size: 0.9rem; }
+            .slide .llm-response-container p, .slide .llm-response-container li { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+    <main class="presentation-container" aria-label="العرض التقديمي">
+        <div class="progress-indicator">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div class="slide-counter" id="slideCounter" aria-live="polite" aria-atomic="true">1 / 12</div>
+        
+        <div class="thumbnails-container" id="thumbnailsContainer" aria-label="الصور المصغرة للشرائح"></div>
+
+        <!-- Slides Content -->
+        <article class="slide active" id="slide1" role="region" aria-labelledby="slide1-title">
+            <h1 id="slide1-title">تحليل وتقييم بنك الأسئلة</h1>
+            <p class="text-xl text-slate-600 mt-4">
+                مهمة متقدمة لبناء <span class="highlight">موجهات (Prompts)</span> فعالة باستخدام نماذج اللغة الكبيرة.
+            </p>
+            <img src="https://placehold.co/400x200/6a11cb/ffffff?text=AI+%26+Education&font=cairo" alt="صورة رمزية للذكاء الاصطناعي والتعليم" class="mt-8">
+            
+            <button id="playSummaryBtn" class="nav-button mt-6" aria-label="تشغيل ملخص العرض التقديمي">
+                <i id="playSummaryIcon" class="fas fa-play"></i>
+                <span id="playSummaryText">استمع إلى الملخص</span>
+            </button>
+            
+            <audio id="summaryAudio" src="https://dl.dropboxusercontent.com/scl/fi/sbhcebhz0vy1ww72si60c/.wav?rlkey=lmenzzpxmjeomihrgg78wyq2p&st=3kyniwoa&dl=0" preload="metadata"></audio>
+        </article>
+
+        <article class="slide" id="slide2" role="region" aria-labelledby="slide2-title">
+            <h2 id="slide2-title">المقدمة: فهم المهمة</h2>
+            <ul class="space-y-3 text-right max-w-xl">
+                <li><strong>المهمة:</strong> بناء موجه <span class="highlight">(Prompt)</span> يوجه النموذج لتنفيذ عدة خطوات متسلسلة.</li>
+                <li><strong>الاعتماد الأساسي على:</strong>
+                    <ul class="mr-4 mt-1 space-y-1">
+                        <li><strong>تلقين السياق:</strong> لتوفير المصادر (الكتاب وبنك الأسئلة).</li>
+                        <li><strong>تلقين النظام:</strong> لتحديد الخطوات المطلوبة والمخرجات.</li>
+                    </ul>
+                </li>
+                <li><strong>إمكانية استخدام تلقين سلسلة الأفكار (Chain of Thought - CoT):</strong> لتوجيه عملية الاستدلال خطوة بخطوة.</li>
+            </ul>
+        </article>
+
+        <article class="slide" id="slide3" role="region" aria-labelledby="slide3-title">
+            <h2 id="slide3-title">المرحلة الأولى: تلقين السياق</h2>
+            <p>هذا الجزء يحدد للنموذج ما هي مصادر المعلومات التي يجب أن يعتمد عليها.</p>
+            <ul class="space-y-2 text-right max-w-xl">
+                <li><strong>الهدف:</strong> تحديد مصادر المعلومات التي سيعتمد عليها النموذج.</li>
+                <li><strong>المصادر:</strong>
+                    <ol class="mr-5 mt-2 space-y-1">
+                        <li><strong>المصدر الأساسي للمحتوى:</strong> كتاب المنهج (مثال: "كتاب الجغرافيا للصف الأول الثانوي.pdf").</li>
+                        <li><strong>بنك الأسئلة:</strong> النص المراد تحليله وتقييمه.</li>
+                    </ol>
+                </li>
+            </ul>
+            <p class="mt-4 font-semibold">مثال للموجه:</p>
+            <pre class="mt-2"><code>يرجى استخدام المصدرين التاليين لإكمال المهمة المطلوبة:
+1. المصدر الأساسي للمحتوى: كتاب المنهج المقدم كملف باسم [اسم ملف الكتاب.pdf].
+2. بنك الأسئلة المراد تحليله وتقييمه (مقدم أدناه كنص).
+بنك الأسئلة:
+[أدرج هنا قائمة الأسئلة من بنك الأسئلة الخاص بك بشكل واضح]</code></pre>
+        </article>
+
+        <article class="slide" id="slide4" role="region" aria-labelledby="slide4-title">
+            <h2 id="slide4-title">المرحلة الثانية: تلقين النظام</h2>
+            <h3 class="text-lg font-semibold text-blue-700 mb-3">الخطوة 1: تحديد الدرس المرتبط</h3>
+            <ul class="space-y-3 text-right max-w-xl">
+                <li><strong>المطلوب:</strong> تنفيذ الخطوات التالية بالترتيب بناءً على المصادر المذكورة أعلاه.</li>
+                <li><strong>أولاً:</strong> قم بتحليل بنك الأسئلة المقدم لتحديد الموضوع العام له.</li>
+                <li><strong>ثانياً:</strong> ابحث داخل كتاب المنهج ([اسم ملف الكتاب.pdf]) لتحديد <strong>الفصل أو الدرس الوحيد</strong> الذي يغطي هذا الموضوع العام بشكل أساسي.</li>
+                <li><strong>المخرج:</strong> اذكر اسم ورقم الفصل أو الدرس الذي حددته.</li>
+            </ul>
+        </article>
+
+        <article class="slide" id="slide5" role="region" aria-labelledby="slide5-title">
+            <h2 id="slide5-title">المرحلة الثانية: تلقين النظام</h2>
+            <h3 class="text-lg font-semibold text-blue-700 mb-3">الخطوة 2: استخراج معايير التقييم</h3>
+            <ul class="space-y-3 text-right max-w-xl">
+                <li><strong>ثالثاً:</strong> من الفصل أو الدرس الذي حددته في الخطوة 1 <strong>فقط</strong>، قم باستخراج العناصر التالية:
+                    <ul class="list-disc mr-5 mt-2 space-y-1">
+                        <li>قائمة بالمفاهيم الأساسية الواردة فيه.</li>
+                        <li>العناوين الرئيسية والفرعية داخل هذا الدرس/الفصل.</li>
+                        <li>نواتج التعلم المستهدفة إذا كانت مذكورة.</li>
+                    </ul>
+                </li>
+                <li><strong>المخرج:</strong> قدم هذه العناصر المستخرجة كقائمة لمعايير التقييم.</li>
+            </ul>
+        </article>
+
+        <article class="slide" id="slide6" role="region" aria-labelledby="slide6-title">
+            <h2 id="slide6-title">المرحلة الثانية: تلقين النظام</h2>
+            <h3 class="text-lg font-semibold text-blue-700 mb-3">الخطوة 3: تقييم بنك الأسئلة</h3>
+            <ul class="space-y-3 text-right max-w-xl">
+                <li><strong>رابعاً:</strong> باستخدام قائمة معايير التقييم المستخرجة في الخطوة 2 <strong>فقط</strong>، قم بتقييم كل سؤال في بنك الأسئلة الأصلي.</li>
+                <li><strong>لكل سؤال:</strong> حدد ما إذا كان "مرتبطاً" (يغطي أحد المفاهيم أو العناوين أو نواتج التعلم المستخرجة) أو "غير مرتبط".</li>
+            </ul>
+        </article>
+
+        <article class="slide" id="slide7" role="region" aria-labelledby="slide7-title">
+            <h2 id="slide7-title">المرحلة الثانية: تلقين النظام</h2>
+            <h3 class="text-lg font-semibold text-blue-700 mb-3">الخطوة 4: عرض النتائج النهائية</h3>
+            <ul class="space-y-3 text-right max-w-xl">
+                <li><strong>خامساً:</strong> قم بعرض النتائج النهائية بالتنسيق التالي:
+                    <div class="bg-slate-100 p-4 rounded-md shadow-sm text-sm mt-2 text-right">
+                        <p><strong>الدرس المحدد:</strong> [اسم ورقم الدرس/الفصل من الخطوة 1]</p>
+                        <p><strong>معايير التقييم المستخرجة:</strong> [قائمة المفاهيم والعناوين ونواتج التعلم من الخطوة 2]</p>
+                        <p><strong>تقييم الأسئلة:</strong></p>
+                        <ul class="list-disc mr-5 mt-1">
+                            <li>سؤال 1: [مرتبط / غير مرتبط]</li>
+                            <li>سؤال 2: [مرتبط / غير مرتبط]</li>
+                            <li>... وهكذا لبقية الأسئلة.</li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        </article>
+
+        <article class="slide" id="slide8" role="region" aria-labelledby="slide8-title">
+            <h2 id="slide8-title">إضافة اختيارية: تلقين سلسلة الأفكار (CoT)</h2>
+            <ul class="space-y-3 text-right max-w-xl">
+                <li><strong>الهدف:</strong> تشجيع النموذج على إظهار عملية تفكيره بشكل أوضح أثناء تنفيذ كل خطوة.</li>
+                <li><strong>كيف؟</strong> يمكنك إضافة عبارة مثل: <span class="bg-yellow-200 text-yellow-800 px-2 py-1 rounded text-sm">"لنقم بتنفيذ هذه الخطوات بالتفكير خطوة بخطوة."</span> في بداية الجزء الثاني.</li>
+                <li><strong>ملاحظة هامة:</strong> حتى بدون هذه الإضافة، فإن تقسيم المهمة إلى خطوات متسلسلة هو شكل من أشكال توجيه الاستدلال المنطقي للنموذج.</li>
+            </ul>
+             <img src="https://placehold.co/300x150/fbbf24/422006?text=CoT&font=cairo" alt="صورة رمزية لسلسلة الأفكار" class="mt-6">
+        </article>
+
+        <article class="slide has-long-content" id="slide9" role="region" aria-labelledby="slide9-title">
+            <h2 id="slide9-title">مثال على تقييم بنوك الأسئلة</h2>
+            <div class="two-column-layout">
+                <div class="column">
+                    <h3>System Prompting (مع إمكانية إضافة CoT)</h3>
+                    <pre>المطلوب تنفيذ الخطوات التالية بالترتيب بناءً على المصادر المذكورة أعلاه، الخطوة 1: تحديد الدرس المرتبط * أولاً، قم بتحليل بنك الأسئلة المقدم لتحديد الموضوع العام له. * ثانياً، ابحث داخل كتاب المنهج ([اسم ملف الكتاب.pdf]) لتحديد **الفصل أو الدرس الوحيد** الذي يغطي هذا الموضوع العام بشكل أساسي. * اذكر اسم ورقم الفصل أو الدرس الذي حددته. الخطوة 2: استخراج معايير التقييم من الدرس المحدد * ثالثاً، من الفصل أو الدرس الذي حددته في الخطوة 1 **فقط**، قم باستخراج العناصر التالية: * قائمة بالمفاهيم الأساسية الواردة فيه. * العناوين الرئيسية والفرعية داخل هذا الدرس/الفصل. * نواتج التعلم المستهدفة إذا كانت مذكورة في بداية أو نهاية الدرس/الفصل. * قدم هذه العناصر المستخرجة كقائمة لمعايير التقييم. الخطوة 3: تقييم بنك الأسئلة بناءً على المعايير * رابعاً، باستخدام قائمة معايير التقييم المستخرجة في الخطوة 2 **فقط**، قم بتقييم كل سؤال في بنك الأسئلة الأصلي. * لكل سؤال، حدد ما إذا كان "مرتبطاً" (يغطي أحد المفاهيم أو العناوين أو نواتج التعلم المستخرجة) أو "غير مرتبط". الخطوة 4: عرض النتائج النهائية * خامساً، قم بعرض النتائج النهائية بالتنسيق التالي: * **الدرس المحدد:** [اسم ورقم الدرس/الفصل من الخطوة 1] * **معايير التقييم المستخرجة:** [قائمة المفاهيم والعناوين ونواتج التعلم من الخطوة 2] * **تقييم الأسئلة:** * سؤال 1: [مرتبط / غير مرتبط] * سؤال 2: [مرتبط / غير مرتبط] * ... وهكذا لبقية الأسئلة.</pre>
+                </div>
+                <div class="column">
+                    <h3>Contextual Prompting</h3>
+                    <pre>هذا الجزء يحدد للنموذج ما هي مصادر المعلومات التي يجب أن يعتمد عليها: الكتاب كملف، وبنك الأسئلة كنص. هذا هو السياق الأساسي للمهمة.
+
+يرجى استخدام المصدرين التاليين لإكمال المهمة المطلوبة:
+1. المصدر الأساسي للمحتوى: كتاب المنهج المقدم كملف باسم [اسم ملف الكتاب.pdf]، مثال: "كتاب الجغرافيا للصف الأول الثانوي 2.[.pdf]"
+2. بنك الأسئلة المراد تحليله وتقييمه (مقدم أدناه كنص).
+بنك الأسئلة:
+[أدرج هنا قائمة الأسئلة من بنك الأسئلة الخاص بك بشكل واضح]</pre>
+                </div>
+            </div>
+        </article>
+
+        <article class="slide has-long-content" id="slide10" role="region" aria-labelledby="slide10-title">
+            <h2 id="slide10-title">مخطط سير العمل المقترح</h2>
+            <div class="flowchart">
+                <div class="flowchart-io">1. تحديد المصادر (كتاب + بنك أسئلة)</div>
+                <div class="flowchart-label">تلقين السياق (Contextual Prompt)</div>
+                <div class="flowchart-arrow">⬇️</div>
+                <div class="flowchart-step">2. تحليل بنك الأسئلة (لتحديد الموضوع العام)</div>
+                <div class="flowchart-arrow">⬇️</div>
+                <div class="flowchart-step">3. البحث في الكتاب (لتحديد الدرس/الفصل)</div>
+                <div class="flowchart-label">المخرج: اسم ورقم الدرس/الفصل</div>
+                <div class="flowchart-arrow">⬇️</div>
+                <div class="flowchart-step">4. استخراج معايير التقييم من الدرس</div>
+                <div class="flowchart-label">(مفاهيم، عناوين، نواتج تعلم)</div>
+                <div class="flowchart-label">المخرج: قائمة معايير التقييم</div>
+                <div class="flowchart-arrow">⬇️</div>
+                <div class="flowchart-decision">5. تقييم كل سؤال في بنك الأسئلة</div>
+                <div class="flowchart-label">(مرتبط / غير مرتبط) بناءً على المعايير</div>
+                <div class="flowchart-arrow">⬇️</div>
+                <div class="flowchart-io">6. عرض النتائج النهائية</div>
+                <div class="flowchart-label">(الدرس، المعايير، تقييم الأسئلة)</div>
+            </div>
+        </article>
+
+        <article class="slide has-long-content" id="slide11" role="region" aria-labelledby="slide11-title">
+            <h2 id="slide11-title">مثال تطبيقي: تحليل بنك أسئلة درس الإحساس</h2>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>العنصر الأساسي في درس الإحساس</th>
+                        <th>عدد الأسئلة</th>
+                        <th>النسبة المئوية من الأسئلة المرتبطة بالدرس</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>1. مفهوم الإحساس</td><td>6</td><td>9.38%</td></tr>
+                    <tr><td>2. أنواع العمليات الحسية</td><td>6</td><td>9.38%</td></tr>
+                    <tr><td>3. مراحل عملية الإحساس</td><td>14</td><td>21.88%</td></tr>
+                    <tr><td>- التنبيه أو الاستثارة</td><td>2</td><td>3.13%</td></tr>
+                    <tr><td>- الاستقبال</td><td>4</td><td>6.25%</td></tr>
+                    <tr><td>- تحويل الطاقة</td><td>6</td><td>9.38%</td></tr>
+                    <tr><td>- التسجيل</td><td>2</td><td>3.13%</td></tr>
+                    <tr><td>4. عتبات الإحساس</td><td>38</td><td>59.38%</td></tr>
+                    <tr><td>- العتبة المطلقة (وما دونها)</td><td>14</td><td>21.88%</td></tr>
+                    <tr><td>- العتبة الفارقة</td><td>9</td><td>14.06%</td></tr>
+                    <tr><td>- العتبة القصوى</td><td>14</td><td>21.88%</td></tr>
+                    <tr><td>- المدى بين المطلقة والقصوى</td><td>1</td><td>1.58%</td></tr>
+                    <tr><td><strong>المجموع (الأسئلة المرتبطة)</strong></td><td><strong>64</strong></td><td><strong>100%</strong></td></tr>
+                </tbody>
+            </table>
+            <div class="llm-response-container">
+                <h4>رد النظام (مثال):</h4>
+                <p>تمام، سأقوم بتقديم تحليل بنك الأسئلة لدرس "الإحساس" بناءً على نواتج التعلم والعناصر الأساسية التي استخلصناها سابقًا من كتاب "علم النفس والاجتماع للصف الثاني الثانوي" (صفحات 44-46). سأعرض النتائج في شكل نقاط، مع ذكر مُعرّفات الأسئلة (IDs) المرتبطة بكل عنصر.</p>
+                <p>نظرًا لكثرة الأسئلة، قد يتطلب الأمر أكثر من رد لتقديم التحليل كاملاً.</p>
+                <p><strong>التقرير التفصيلي لتحليل بنك الأسئلة (الجزء الأول):</strong></p>
+                <p>إجمالي عدد الأسئلة في البنك: 80 سؤالًا.</p>
+                <p><strong>أولاً: تعريف الإحساس وأهميته كعملية معرفية (ناتج التعلم 1)</strong></p>
+                <p>العنصر 1.1: تعريف الإحساس، طبيعته كعملية أولية، ودوره في تزويد الفرد بالمعلومات الخام.</p>
+                <ul>
+                    <li>عدد الأسئلة التقريبي: 5 أسئلة (حوالي 6.25%).</li>
+                    <li>مُعرّفات الأسئلة (IDs) التي تغطي هذا العنصر:
+                        <ul>
+                            <li>158136048580 (يشير إلى وظيفة الإحساس في إدراك المحفزات)</li>
+                            <li>245165142145 (يشير إلى الإحساس كعملية دمج للمعلومات الحسية نحو الجهاز العصبي – قد يتقاطع مع مراحل الإحساس)</li>
+                            <li>359150347817 (يشير إلى الإحساس كمرحلة ابتدائية لتلقي العالم الخارجي)</li>
+                            <li>484178458493 (يشير إلى الإحساس كأثر نفسي مباشر نتيجة انفعال الحواس)</li>
+                            <li>727178741525 (سؤال مقالي يطلب البرهنة على أهمية الإحساس)</li>
+                            <li>982162828483 (سؤال مقالي مكرر للسابق يطلب البرهنة على أهمية الإحساس)</li>
+                        </ul>
+                    </li>
+                </ul>
+                <p><strong>ثانياً: أنواع العمليات الحسية (ناتج التعلم 2)</strong></p>
+                <p>العنصر 2.1: تمييز أنواع الحواس المختلفة (بصرية، سمعية، لمسية، شمية، تذوق، حركية، توازن).</p>
+                 <ul>
+                    <li>عدد الأسئلة التقريبي: 7 أسئلة (حوالي 8.75%).</li>
+                    <li>مُعرّفات الأسئلة (IDs) التي تغطي هذا العنصر:
+                        <ul>
+                            <li>140134737015 (يشير إلى حاسة اللمس)</li>
+                            <li>254165383643 (يشير إلى الإحساس بالتوازن - اضطراب دوار البحر)</li>
+                            <li>292160515464 (يشير إلى الإحساس الحركي)</li>
+                            <li>402142093436 (يشير إلى أهمية حاسة البصر)</li>
+                            <li>495172328415 (يشير إلى الإحساس بالتوازن - خلل في لعبة الصاروخ)</li>
+                            <li>893193285769 (يشير إلى عملية البصر وقدرة الدماغ على كشف الموجات الكهرومغناطيسية)</li>
+                        </ul>
+                    </li>
+                </ul>
+                <p><em>ملاحظة: بعض الأسئلة عن العتبات قد تذكر نوع حاسة كمثال (مثل السمع أو البصر) ولكنها تُصنف أساسًا تحت العتبات.</em></p>
+            </div>
+        </article>
+
+        <article class="slide" id="slide12" role="region" aria-labelledby="slide12-title">
+            <h1 id="slide12-title">شكراً لكم!</h1>
+            <p class="text-xl text-slate-600 mt-4">نأمل أن يكون هذا العرض التقديمي مفيداً.</p>
+            <p class="text-lg text-slate-500 mt-2">هل لديكم أي أسئلة أو استفسارات؟</p>
+            <img src="https://placehold.co/300x150/10b981/ffffff?text=Questions%3F&font=cairo" alt="صورة رمزية للأسئلة" class="mt-8">
+        </article>
+        <!-- End Slides Content -->
+
+        <nav class="navigation-controls" aria-label="أزرار التحكم في الشرائح">
+            <button id="prevBtn" class="nav-button" onclick="changeSlide(-1)" aria-label="الشريحة السابقة">
+                <i class="fa-solid fa-angle-double-right"></i>
+                <span>السابق</span>
+            </button>
+            <button id="nextBtn" class="nav-button" onclick="changeSlide(1)" aria-label="الشريحة التالية">
+                <span>التالي</span>
+                <i class="fa-solid fa-angle-double-left"></i>
+            </button>
+        </nav>
+    </main>
+
+    <script>
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        const prevButton = document.getElementById('prevBtn');
+        const nextButton = document.getElementById('nextBtn');
+        const progressBar = document.getElementById('progressBar');
+        const slideCounter = document.getElementById('slideCounter');
+        const thumbnailsContainer = document.getElementById('thumbnailsContainer');
+
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        // --- تشغيل الملخص الصوتي ---
+        const playSummaryBtn = document.getElementById('playSummaryBtn');
+        const summaryAudio = document.getElementById('summaryAudio');
+        const playSummaryIcon = document.getElementById('playSummaryIcon');
+        const playSummaryText = document.getElementById('playSummaryText');
+
+        if (playSummaryBtn && summaryAudio && playSummaryIcon && playSummaryText) {
+            playSummaryBtn.addEventListener('click', () => {
+                if (summaryAudio.paused) {
+                    summaryAudio.play().catch(error => console.error("Error playing audio:", error)); // معالجة الأخطاء المحتملة
+                    playSummaryIcon.classList.remove('fa-play');
+                    playSummaryIcon.classList.add('fa-pause');
+                    playSummaryText.textContent = 'إيقاف الملخص';
+                } else {
+                    summaryAudio.pause();
+                    playSummaryIcon.classList.remove('fa-pause');
+                    playSummaryIcon.classList.add('fa-play');
+                    playSummaryText.textContent = 'استمع إلى الملخص';
+                }
+            });
+
+            summaryAudio.addEventListener('ended', () => {
+                playSummaryIcon.classList.remove('fa-pause');
+                playSummaryIcon.classList.add('fa-play');
+                playSummaryText.textContent = 'استمع إلى الملخص';
+                summaryAudio.currentTime = 0;
+            });
+             // عند تحميل بيانات كافية لتشغيل الصوت
+            summaryAudio.addEventListener('canplay', () => {
+                playSummaryBtn.disabled = false; // تمكين الزر
+            });
+             // إذا حدث خطأ في تحميل الصوت
+            summaryAudio.addEventListener('error', (e) => {
+                console.error('Error loading audio:', e);
+                playSummaryText.textContent = 'خطأ في تحميل الصوت';
+                playSummaryBtn.disabled = true;
+            });
+
+            // تعطيل الزر مبدئيًا حتى يتم تحميل بيانات الصوت
+            playSummaryBtn.disabled = true; 
+        }
+
+        function stopSummaryOnSlideChange() {
+            if (summaryAudio && !summaryAudio.paused && currentSlideIndex !== 0) { // تأكد أننا لسنا في الشريحة الأولى
+                 summaryAudio.pause();
+                 summaryAudio.currentTime = 0;
+                 if (playSummaryIcon && playSummaryText) {
+                    playSummaryIcon.classList.remove('fa-pause');
+                    playSummaryIcon.classList.add('fa-play');
+                    playSummaryText.textContent = 'استمع إلى الملخص';
+                 }
+            }
+        }
+        // --- نهاية كود الملخص الصوتي ---
+
+
+        function createThumbnails() {
+            if (!thumbnailsContainer) return;
+            thumbnailsContainer.innerHTML = ''; 
+            slides.forEach((slide, index) => {
+                const thumb = document.createElement('button'); 
+                thumb.className = 'thumbnail';
+                thumb.setAttribute('aria-label', `الانتقال إلى الشريحة ${index + 1}`);
+                thumb.setAttribute('aria-controls', slide.id);
+                thumb.style.backgroundColor = `hsl(${index * (360 / totalSlides)}, 70%, 85%)`;
+                thumb.onclick = () => goToSlide(index);
+                thumbnailsContainer.appendChild(thumb);
+            });
+        }
+
+        function updatePresentationState() {
+            if (progressBar) {
+                const progressPercentage = ((currentSlideIndex + 1) / totalSlides) * 100;
+                progressBar.style.width = `${progressPercentage}%`;
+            }
+
+            if (slideCounter) {
+                slideCounter.textContent = `${currentSlideIndex + 1} / ${totalSlides}`;
+            }
+
+            if (prevButton) prevButton.disabled = currentSlideIndex === 0;
+            if (nextButton) nextButton.disabled = currentSlideIndex === totalSlides - 1;
+
+            if (thumbnailsContainer) {
+                const thumbs = thumbnailsContainer.children;
+                for (let i = 0; i < thumbs.length; i++) {
+                    thumbs[i].classList.toggle('active', i === currentSlideIndex);
+                }
+            }
+        }
+
+        function showSlide(indexToShow) {
+            if (indexToShow < 0 || indexToShow >= totalSlides) return;
+
+            const oldSlideIndex = currentSlideIndex;
+            const direction = indexToShow > oldSlideIndex ? 'forward' : 'backward';
+
+            slides.forEach((slide) => {
+                slide.classList.remove('active', 'exiting-left', 'exiting-right');
+                slide.setAttribute('aria-hidden', 'true');
+            });
+            
+            const currentActiveSlide = slides[oldSlideIndex];
+            const newActiveSlide = slides[indexToShow];
+
+            if (currentActiveSlide && oldSlideIndex !== indexToShow) {
+                if (direction === 'forward') {
+                    currentActiveSlide.classList.add('exiting-left');
+                } else {
+                    currentActiveSlide.classList.add('exiting-right');
+                }
+            }
+            
+            newActiveSlide.classList.add('active');
+            newActiveSlide.setAttribute('aria-hidden', 'false');
+            
+            currentSlideIndex = indexToShow;
+            updatePresentationState();
+            if (oldSlideIndex === 0 && indexToShow !== 0) { // إذا انتقلنا من الشريحة الأولى
+                stopSummaryOnSlideChange();
+            }
+        }
+        
+        function goToSlide(index) {
+            showSlide(index);
+        }
+
+        function changeSlide(direction) {
+            const newIndex = currentSlideIndex + direction;
+            goToSlide(newIndex);
+        }
+
+        document.addEventListener('touchstart', e => {
+            if (e.target.closest('.presentation-container')) {
+                touchStartX = e.changedTouches[0].screenX;
+            }
+        }, { passive: true });
+
+        document.addEventListener('touchend', e => {
+            if (e.target.closest('.presentation-container')) {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }
+        });
+
+        function handleSwipe() {
+            const swipeThreshold = 50; 
+            const diffX = touchEndX - touchStartX; 
+
+            if (Math.abs(diffX) > swipeThreshold) {
+                if (diffX < 0) { 
+                    if (currentSlideIndex < totalSlides - 1) changeSlide(1);
+                } else { 
+                    if (currentSlideIndex > 0) changeSlide(-1);
+                }
+            }
+            touchStartX = 0;
+            touchEndX = 0;
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.target.closest('input, textarea, [contenteditable="true"]')) { // لا تتداخل مع حقول الإدخال
+                return; 
+            }
+            switch(event.key) {
+                case 'ArrowRight':
+                case 'PageDown':
+                case ' ': 
+                    if (currentSlideIndex < totalSlides - 1) {
+                        event.preventDefault();
+                        changeSlide(1);
+                    }
+                    break;
+                case 'ArrowLeft':
+                case 'PageUp':
+                    if (currentSlideIndex > 0) {
+                        event.preventDefault();
+                        changeSlide(-1);
+                    }
+                    break;
+                case 'Home':
+                    event.preventDefault();
+                    goToSlide(0);
+                    break;
+                case 'End':
+                    event.preventDefault();
+                    goToSlide(totalSlides - 1);
+                    break;
+                default:
+                    if (event.key >= '1' && event.key <= '9') {
+                        const slideNum = parseInt(event.key) - 1;
+                        if (slideNum < totalSlides) {
+                            event.preventDefault();
+                            goToSlide(slideNum);
+                        }
+                    }
+            }
+        });
+
+        function initializePresentation() {
+            if (slides.length > 0) {
+                 // إضافة كلاس has-long-content للشرائح المحددة
+                const longContentSlideIds = ['slide9', 'slide10', 'slide11'];
+                slides.forEach(slide => {
+                    if (longContentSlideIds.includes(slide.id)) {
+                        slide.classList.add('has-long-content');
+                    }
+                });
+
+                createThumbnails();
+                showSlide(0); 
+            } else {
+                console.warn('No slides found to initialize presentation.');
+                if(slideCounter) slideCounter.textContent = "0 / 0";
+                if(prevButton) prevButton.disabled = true;
+                if(nextButton) nextButton.disabled = true;
+            }
+        }
+        document.addEventListener('DOMContentLoaded', initializePresentation);
+    </script>
+</body>
+</html>
